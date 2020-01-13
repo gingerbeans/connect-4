@@ -1,4 +1,13 @@
 import numpy as np
+import pygame
+import sys
+import math
+
+BLUE = (0, 0, 255)
+BLACK = (0, 0, 0)
+RED = (200, 0, 0)
+YELLOW = (255, 255, 0)
+
 ROW_COUNT = 6
 COLUMN_COUNT = 7
 
@@ -67,31 +76,96 @@ def winning_move(board, piece):
                 return True
 
 
+def _draw_piece(color, c, r):
+    pygame.draw.circle(
+        screen,
+        color,
+        (
+            c * SQUARESIZE + MIDSQUARE,
+            height - (r * SQUARESIZE + MIDSQUARE)),
+        PIECESIZE
+    )
+
+
+def draw_board(board):
+    for c in range(COLUMN_COUNT):
+        for r in range(ROW_COUNT):
+            pygame.draw.rect(screen, BLUE, (c*SQUARESIZE, r*SQUARESIZE + SQUARESIZE, SQUARESIZE, SQUARESIZE))
+            pygame.draw.circle(screen, BLACK, (c*SQUARESIZE + MIDSQUARE, r*SQUARESIZE + SQUARESIZE + MIDSQUARE), PIECESIZE)
+    for c in range(COLUMN_COUNT):
+        for r in range(ROW_COUNT):
+            if board[r][c] == 1:
+                _draw_piece(RED, c, r)
+            elif board[r][c] == 2:
+                _draw_piece(YELLOW, c, r)
+    pygame.display.update()
+
+
 board = create_board()
 game_over = False
 turn = 0
 piece = 1
 
+pygame.init()
+
+SQUARESIZE = 100
+MIDSQUARE = int(SQUARESIZE / 2)
+PIECESIZE = MIDSQUARE - 2
+
+width = COLUMN_COUNT * SQUARESIZE
+height = (ROW_COUNT+1) * SQUARESIZE
+
+size = (width, height)
+
+screen = pygame.display.set_mode(size)
+draw_board(board)
+pygame.display.update()
+
+
+def draw_top_piece():
+    global posx
+    pygame.draw.rect(screen, BLACK, (0, 0, width, SQUARESIZE))
+    posx = event.pos[0]
+    if turn % 2 == 0:
+        pygame.draw.circle(screen, RED, (posx, MIDSQUARE), PIECESIZE)
+    elif turn % 2 != 0:
+        pygame.draw.circle(screen, YELLOW, (posx, MIDSQUARE), PIECESIZE)
+
 
 while not game_over:
-    print_board(board)
-    if turn % 2 == 0:
-        col = get_selection('one')
-        if is_valid_location(board, col):
-            piece = 1
-            row = get_next_open_row(board, col)
-            drop_piece(board, row, col, piece)
 
-    else:
-        col = get_selection('two')
-        if is_valid_location(board, col):
-            piece = 2
-            row = get_next_open_row(board, col)
-            drop_piece(board, row, col, piece)
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            sys.exit()
 
-    turn += 1
-    if turn > 6:
-        if winning_move(board, piece):
-            print(f'Player {piece} wins!')
+        if event.type == pygame.MOUSEMOTION:
+            draw_top_piece()
+        pygame.display.update()
+
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if turn % 2 == 0:
+                posx = event.pos[0]
+                col = int(math.floor(posx / SQUARESIZE))
+                if is_valid_location(board, col):
+                    piece = 1
+                    row = get_next_open_row(board, col)
+                    drop_piece(board, row, col, piece)
+
+            else:
+                posx = event.pos[0]
+                col = int(math.floor(posx / SQUARESIZE))
+                if is_valid_location(board, col):
+                    piece = 2
+                    row = get_next_open_row(board, col)
+                    drop_piece(board, row, col, piece)
+
+            turn += 1
+            if turn > 6:
+                if winning_move(board, piece):
+                    print(f'Player {piece} wins!')
+                    print_board(board)
+                    game_over = True
+
+            print(event.pos)
             print_board(board)
-            game_over = True
+            draw_board(board)
