@@ -169,3 +169,5 @@ while not game_over:
             print(event.pos)
             print_board(board)
             draw_board(board)
+            draw_top_piece()
+        pygame.display.update()
