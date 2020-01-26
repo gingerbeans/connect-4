@@ -120,6 +120,7 @@ size = (width, height)
 screen = pygame.display.set_mode(size)
 draw_board(board)
 pygame.display.update()
+myfont = pygame.font.SysFont('monospace', 75)
 
 
 def draw_top_piece():
@@ -135,6 +136,13 @@ def draw_top_piece():
 while not game_over:
 
     for event in pygame.event.get():
+        if winning_move(board, piece):
+            label = myfont.render(f'Player {piece} wins', 1, RED)
+            screen.blit(label, (40, 10))
+            pygame.display.update()
+            pygame.time.wait(2000)
+            game_over = True
+
         if event.type == pygame.QUIT:
             sys.exit()
 
@@ -150,6 +158,7 @@ while not game_over:
                     piece = 1
                     row = get_next_open_row(board, col)
                     drop_piece(board, row, col, piece)
+                    turn += 1
 
             else:
                 posx = event.pos[0]
@@ -158,16 +167,8 @@ while not game_over:
                     piece = 2
                     row = get_next_open_row(board, col)
                     drop_piece(board, row, col, piece)
+                    turn += 1
 
-            turn += 1
-            if turn > 6:
-                if winning_move(board, piece):
-                    print(f'Player {piece} wins!')
-                    print_board(board)
-                    game_over = True
-
-            print(event.pos)
-            print_board(board)
             draw_board(board)
             draw_top_piece()
-        pygame.display.update()
+            pygame.display.update()
