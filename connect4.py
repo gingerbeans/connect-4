@@ -105,6 +105,7 @@ board = create_board()
 game_over = False
 turn = 0
 piece = 1
+color = RED
 
 pygame.init()
 
@@ -133,25 +134,24 @@ def draw_top_piece():
         pygame.draw.circle(screen, YELLOW, (posx, MIDSQUARE), PIECESIZE)
 
 
-while not game_over:
+while True:
 
     for event in pygame.event.get():
         if winning_move(board, piece):
-            label = myfont.render(f'Player {piece} wins', 1, RED)
+            label = myfont.render(f'Player {piece} wins', 1, color)
             screen.blit(label, (40, 10))
-            pygame.display.update()
-            pygame.time.wait(2000)
             game_over = True
 
         if event.type == pygame.QUIT:
             sys.exit()
 
-        if event.type == pygame.MOUSEMOTION:
+        if event.type == pygame.MOUSEMOTION and not game_over:
             draw_top_piece()
         pygame.display.update()
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             if turn % 2 == 0:
+                color = RED
                 posx = event.pos[0]
                 col = int(math.floor(posx / SQUARESIZE))
                 if is_valid_location(board, col):
@@ -161,6 +161,7 @@ while not game_over:
                     turn += 1
 
             else:
+                color = YELLOW
                 posx = event.pos[0]
                 col = int(math.floor(posx / SQUARESIZE))
                 if is_valid_location(board, col):
